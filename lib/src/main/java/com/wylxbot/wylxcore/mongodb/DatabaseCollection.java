@@ -5,6 +5,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.conversions.Bson;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -12,6 +14,7 @@ import static com.mongodb.client.model.Filters.eq;
 public class DatabaseCollection<T> {
     private final Function<String, T> defaultSupplier;
     private final MongoCollection<T> collection;
+    private final Map<String, T> cache = new HashMap<>();
 
     public DatabaseCollection(Function<String, T> defaultSupplier, MongoDatabase db, String name, Class<T> clazz) {
         this.defaultSupplier = defaultSupplier;
@@ -19,6 +22,7 @@ public class DatabaseCollection<T> {
     }
 
     public T getEntryOrNull(String id) {
+        if (cache.containsKey(id)) return cache.get(id);
         var iter = collection.find(eq("_id", id));
         return iter.first();
     }
@@ -34,6 +38,7 @@ public class DatabaseCollection<T> {
     }
 
     public void setEntry(String id, T entry) {
+        cache.put(id, entry);
         Bson filter = eq("_id", id);
         ReplaceOptions opts = new ReplaceOptions().upsert(true);
         collection.replaceOne(filter, entry, opts);
