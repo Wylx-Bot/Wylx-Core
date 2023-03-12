@@ -51,7 +51,7 @@ public class DatabaseManager {
         client.close();
     }
 
-    public <T> DatabaseCollection<T> createCollection(Function<String, T> defaultSupplier,
+    public <T extends DatabaseDocumentBase> DatabaseCollection<T> createCollection(Function<String, T> defaultSupplier,
                                                       String name,
                                                       Class<T> clazz
     ) {
